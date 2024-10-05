@@ -1,0 +1,40 @@
+plugins {
+    id 'org.jetbrains.kotlin.jvm' version '2.0.10'
+    id 'io.papermc.paperweight.userdev' version '1.7.3'
+}
+
+group = 'com.github.darkvanityoflight'
+version = '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    paperweight.paperDevBundle("1.21.1-R0.1-SNAPSHOT")
+    implementation "net.axay:kspigot:1.19.0"
+}
+
+dependencies {
+    testImplementation 'org.jetbrains.kotlin:kotlin-test'
+}
+
+test {
+    useJUnitPlatform()
+}
+kotlin {
+    jvmToolchain(21)
+}
+
+task {
+    build {
+        dependsOn reobfJar
+    }
+    compileJava {
+        options.encoding = "UTF-8"
+        options.release.set(17)
+    }
+    compileKotlin{
+        kotlinOptions.jvmTarget = "17"
+    }
+}
