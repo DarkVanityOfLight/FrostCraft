@@ -8,6 +8,7 @@ class FrostCraft : KSpigot() {
     lateinit var playerManager: PlayerManager
 
     override fun load() {
+        INSTANCE = this
     }
 
     override fun startup() {
