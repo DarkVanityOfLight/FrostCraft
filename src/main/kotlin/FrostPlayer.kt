@@ -1,5 +1,5 @@
 import org.bukkit.entity.Player
 
-class FrostPlayer(val player: Player) : Player by  player{
+class FrostPlayer(var playerId: java.util.UUID) {
     var temperature : Float = 0.0f
 }

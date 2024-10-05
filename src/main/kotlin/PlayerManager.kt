@@ -18,7 +18,7 @@ class PlayerManager {
     }
 
     fun registerPlayer(player: Player){
-        players[player.uniqueId] = FrostPlayer(player)
+        players[player.uniqueId] = FrostPlayer(player.uniqueId)
     }
 
     fun deregisterPlayer(player: Player){
