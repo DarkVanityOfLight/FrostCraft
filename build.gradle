@@ -12,7 +12,7 @@ repositories {
 
 dependencies {
     paperweight.paperDevBundle("1.21.1-R0.1-SNAPSHOT")
-    implementation "net.axay:kspigot:1.19.0"
+    implementation "net.axay:kspigot:1.21.0"
 }
 
 dependencies {
@@ -26,15 +26,6 @@ kotlin {
     jvmToolchain(21)
 }
 
-task {
-    build {
-        dependsOn reobfJar
-    }
-    compileJava {
-        options.encoding = "UTF-8"
-        options.release.set(17)
-    }
-    compileKotlin{
-        kotlinOptions.jvmTarget = "17"
-    }
+tasks.assemble {
+    dependsOn(tasks.reobfJar)
 }
