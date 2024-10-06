@@ -13,7 +13,9 @@ data class Coordinate(val x: Int, val y: Int, val z: Int){
 }
 
 
-fun isEnclosed(location3D: SimpleLocation3D, world: World) : Pair<Boolean, Set<Material>> {
+// TODO: Optimize return fields to shave of a few bytes
+// TODO: Somehow this is off by one block, seems like player location x is actually player location x - 1 don't ask why
+fun isEnclosed(location3D: SimpleLocation3D, world: World) : Pair<Boolean, List<Material>> {
     val startLocation = Coordinate(location3D)
 
 
@@ -25,14 +27,9 @@ fun isEnclosed(location3D: SimpleLocation3D, world: World) : Pair<Boolean, Set<M
 
     val visited = mutableSetOf<Coordinate>()
     val stack = mutableListOf(Coordinate(location3D))
-    val enclosingBlocks = mutableSetOf<Material>()
-    //val enclosedBlocks = mutableSetOf<Coordinate>()
-    var isEnclosed = true
-
-    //enclosedBlocks.add(startLocation)
+    val enclosingBlocks = mutableListOf<Material>()
 
     while (stack.isNotEmpty()){
-        //Bukkit.getLogger().info("Stack size: ${stack.size}")
         val current = stack.removeAt(stack.size - 1)
 
         if (current !in visited){
@@ -65,7 +62,7 @@ fun isEnclosed(location3D: SimpleLocation3D, world: World) : Pair<Boolean, Set<M
         }
     }
 
-    return Pair(isEnclosed, enclosingBlocks)
+    return Pair(true, enclosingBlocks)
 }
 
 fun calculateInsulation(enclosingBlock: List<Material>) : Float {
