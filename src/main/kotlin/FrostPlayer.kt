@@ -22,6 +22,10 @@ class FrostPlayer(var playerId: java.util.UUID) {
     fun checkTemperature(player: Player){
         assert(player.uniqueId == playerId)
 
+        if (player.gameMode == org.bukkit.GameMode.CREATIVE || player.gameMode == org.bukkit.GameMode.SPECTATOR){
+            return
+        }
+
         isEnclosed(player.location.toSimple(), player.world).let {
             temperature = if (it.first){
                 this.coldMessageInterval = 0
