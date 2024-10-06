@@ -158,15 +158,18 @@ class ClimateManager {
 
     fun getTemperature(location: Location) : Float {
         val point = Coordinate(location)
-        var temperature = globalTemperature
+
+        var maxTemp : Float = globalTemperature
 
         for (zone in climateZones){
             if (zone.contains(point)){
-                temperature = zone.getTemperature()
+                if (zone.getTemperature() > maxTemp){
+                    maxTemp = zone.getTemperature()
+                }
             }
         }
 
-        return temperature
+        return maxTemp
     }
 }
 
