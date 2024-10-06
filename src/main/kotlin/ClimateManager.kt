@@ -5,7 +5,7 @@ import org.bukkit.block.Block
 import org.bukkit.Location
 import org.bukkit.Material
 
-const val MAX_ENCLOSE_RANGE = 5
+const val MAX_ENCLOSE_RANGE = 128
 
 data class ClimateZone(val origin: Coordinate, val world: World, var temperature: Float) {}
 
