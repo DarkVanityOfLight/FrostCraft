@@ -32,7 +32,9 @@ class PlayerManager {
         // This is a simple way to do it, but it's not efficient, it's better to use a more efficient way to do it
         Bukkit.getScheduler().scheduleSyncRepeatingTask(Manager, Runnable {
             players.values.forEach {
-                it.checkTemperature()
+                Bukkit.getScheduler().runTaskAsynchronously(Manager, Runnable {
+                    it.checkTemperature(Bukkit.getPlayer(it.playerId)!!)
+                })
 
             }
         }, 0, 20)

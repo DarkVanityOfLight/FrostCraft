@@ -1,24 +1,45 @@
 import net.axay.kspigot.chat.KColors
 import net.axay.kspigot.chat.literalText
 import net.axay.kspigot.event.listen
+import net.axay.kspigot.extensions.geometry.toSimple
 import org.bukkit.Bukkit
 import org.bukkit.damage.DamageSource
 import org.bukkit.damage.DamageType
+import org.bukkit.entity.Player
 import org.bukkit.event.entity.EntityDamageEvent
 
 const val dmg = 0.5;
 
 class FrostPlayer(var playerId: java.util.UUID) {
-    var temperature : Float = -1.0f
+    var temperature : Float = 0.0f
     var diedFromFrost = false
     var coldMessageInterval = 0
 
     fun updateTemperature(){}
 
-    fun checkTemperature(){
-        val player = Bukkit.getPlayer(playerId)!!
+
+    // Do this async(I hate sync/async stuff)
+    fun checkTemperature(player: Player){
+        assert(player.uniqueId == playerId)
+
+        isEnclosed(player.location.toSimple(), player.world).let {
+            temperature = if (it.first){
+                this.coldMessageInterval = 0
+                0.0f
+            }else{
+                -1.0f
+            }
+        }
+
+        // Apply effects in sync on the next tick
+        Bukkit.getScheduler().callSyncMethod<Unit>(Manager){
+            applyTemperatureEffects(player)
+        }
+    }
 
 
+    // Run this in sync
+    private fun applyTemperatureEffects(player: Player) {
         if (temperature < 0){
             if (coldMessageInterval == 0 ){
                 player.sendActionBar(literalText("You are cold!"){
