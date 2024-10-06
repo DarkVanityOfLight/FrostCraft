@@ -7,8 +7,6 @@ import org.bukkit.Material
 
 const val MAX_ENCLOSE_RANGE = 128
 
-data class ClimateZone(val origin: Coordinate, val world: World, var temperature: Float) {}
-
 data class Coordinate(val x: Int, val y: Int, val z: Int){
     constructor(location: Location) : this(location.blockX, location.blockY, location.blockZ)
     constructor(location3D: SimpleLocation3D) : this(location3D.x.toInt(), location3D.y.toInt(), location3D.z.toInt())
@@ -70,45 +68,108 @@ fun isEnclosed(location3D: SimpleLocation3D, world: World) : Pair<Boolean, Set<M
     return Pair(isEnclosed, enclosingBlocks)
 }
 
-fun calculateInsulation(enclosingBlock: Set<Material>) : Float {
+fun calculateInsulation(enclosingBlock: List<Material>) : Float {
     var insulation = 0.0f
 
+    if (enclosingBlock.isEmpty()){
+        return insulation
+    }
+
     for (block in enclosingBlock){
-        when(block){
-            Material.GLASS -> insulation += 0.1f
-            //Material.WOOD -> insulation += 0.2f
-            Material.STONE -> insulation += 0.3f
-            Material.IRON_BLOCK -> insulation += 0.4f
-            Material.DIAMOND_BLOCK -> insulation += 0.5f
-            Material.EMERALD_BLOCK -> insulation += 0.6f
-            Material.GOLD_BLOCK -> insulation += 0.7f
-            Material.NETHERITE_BLOCK -> insulation += 0.8f
-            else -> insulation += 0.0f
+        insulation += when(block){
+            Material.GLASS -> 1f
+            Material.STONE -> 1.5f
+            Material.IRON_BLOCK -> 2f
+            Material.DIAMOND_BLOCK -> 3f
+            Material.EMERALD_BLOCK -> 3f
+            Material.GOLD_BLOCK -> 0.5f
+            Material.NETHERITE_BLOCK -> 4f
+            else -> 0.0f
         }
     }
 
     return insulation / enclosingBlock.size
 }
 
+fun calculateHeatSources(heatSources: Set<Material>) : Float {
+    var heat = 0.0f
+
+    for (block in heatSources){
+        when(block){
+            Material.LAVA -> heat += 0.5f
+            Material.TORCH -> heat += 0.1f
+            Material.CAMPFIRE -> heat += 0.3f
+            Material.SOUL_CAMPFIRE -> heat -= 0.3f
+            Material.FIRE -> heat += 0.7f
+            else -> heat += 0.0f
+        }
+    }
+
+    return heat
+}
+
+data class ClimateZone(val world : World, val center: Coordinate, val radius: Float, val tempFunction: (Float) -> Float){
+    private var temperature = 0.0f
+
+
+    fun contains(point: Coordinate): Boolean {
+        val (cx, cy, cz) = center
+        val (x, y, z) = point
+
+        // Calculate squared distance from the point to the center
+        val distanceSquared = (x - cx) * (x - cx) + (y - cy) * (y - cy) + (z - cz) * (z - cz)
+
+        // Compare with the squared radius
+        return distanceSquared <= radius * radius
+    }
+
+    fun updateTemperature(temperature: Float){
+        this.temperature = tempFunction(temperature)
+    }
+
+    fun getTemperature() : Float {
+        return temperature
+    }
+}
+
 class ClimateManager {
-    private var globaleTemperature = 0.0f
+    var globalTemperature = 0.0f
     private val climateZones = mutableSetOf<ClimateZone>()
 
     fun addClimateZone(climateZone: ClimateZone) {
         climateZones.add(climateZone)
     }
 
-    fun createClimateZone(location3D: SimpleLocation3D, world: World) : Boolean{
-        val (isEnclosed, enclosingBlocks) = isEnclosed(location3D, world)
-        if (isEnclosed){
-            val insulation = calculateInsulation(enclosingBlocks)
-            val temperature = globaleTemperature + insulation
+    fun createClimateZone(world: World, center: Coordinate, radius: Float, tempFunc: (Float) -> Float) {
+        addClimateZone(ClimateZone(world, center, radius, tempFunc))
+    }
 
-            val climateZone = ClimateZone(Coordinate(location3D), world, temperature)
-            addClimateZone(climateZone)
-            return true
-        }else{
-            return false
+    fun createClimateZone(world: World, center: Location, radius: Float, tempFunc: (Float) -> Float) {
+        createClimateZone(world, Coordinate(center), radius, tempFunc)
+    }
+
+    fun createClimateZone(world: World, center: SimpleLocation3D, radius: Float, tempFunc: (Float) -> Float) {
+        createClimateZone(world, Coordinate(center), radius, tempFunc)
+    }
+
+    fun updateGlobalTemperature(temperature: Float){
+        globalTemperature = temperature
+        climateZones.forEach {
+            it.updateTemperature(temperature)
         }
     }
+
+    fun getTemperature(location: Location) : Float {
+        val point = Coordinate(location)
+        var temperature = globalTemperature
+
+        for (zone in climateZones){
+            if (zone.contains(point)){
+                temperature = zone.getTemperature()
+            }
+        }
+
+        return temperature
+    }
 }
+
