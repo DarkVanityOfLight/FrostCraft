@@ -1,4 +1,4 @@
-import Generators.Generator
+import generators.Generator
 import net.axay.kspigot.chat.literalText
 import net.axay.kspigot.commands.argument
 import net.axay.kspigot.commands.command
@@ -72,11 +72,11 @@ class FrostCraft : KSpigot() {
 
         command("createGenerator") {
             runs {
-                var listener: SingleListener<PlayerInteractEvent>? = null;
+                var listener: SingleListener<PlayerInteractEvent>? = null
                 var clicks = 0
                 val blocks: MutableList<Block> = mutableListOf()
 
-                listener = listen<PlayerInteractEvent>() { playerInteractEvent ->
+                listener = listen<PlayerInteractEvent> { playerInteractEvent ->
                     playerInteractEvent.isCancelled = true
                     playerInteractEvent.clickedBlock?.let { blocks.add(it) }
                     clicks++
