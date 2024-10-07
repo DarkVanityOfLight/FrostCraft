@@ -12,8 +12,8 @@ import org.bukkit.World
  * @property tempFunction The function to calculate the temperature.
  */
 data class ClimateZone(
-    val world: World,
-    val center: SimpleLocation3D,
+    override val world: World,
+    override val center: SimpleLocation3D,
     val radius: Float,
     val tempFunction: (Float) -> Float
 ) : IZone {

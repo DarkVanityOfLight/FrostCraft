@@ -1,10 +1,9 @@
 import net.axay.kspigot.extensions.geometry.SimpleLocation3D
 import net.axay.kspigot.extensions.geometry.toSimple
 import org.bukkit.Location
-import org.bukkit.Material
 import org.bukkit.World
 import zones.ClimateZone
-
+import zones.IZone
 
 
 /**
@@ -12,16 +11,16 @@ import zones.ClimateZone
  */
 class ClimateManager {
     var globalTemperature = 0.0f
-    private val climateZones = mutableSetOf<ClimateZone>()
+    private val zones = mutableSetOf<IZone>()
 
     /**
      * Adds a climate zone to the manager.
      *
      * @param climateZone The climate zone to add.
      */
-    fun addClimateZone(climateZone: ClimateZone) {
-        climateZone.updateTemperature(globalTemperature)
-        climateZones.add(climateZone)
+    fun addClimateZone(zone: IZone) {
+        zone.updateTemperature(globalTemperature)
+        zones.add(zone)
     }
 
 
@@ -57,7 +56,7 @@ class ClimateManager {
      * @param center The center SimpleLocation3D of the climate zone.
      */
     fun removeClimateZoneAt(world: World, center: SimpleLocation3D) {
-        climateZones.removeIf { it.world == world && it.center == center }
+        zones.removeIf { it.world == world && it.center == center }
     }
 
     /**
@@ -67,7 +66,7 @@ class ClimateManager {
      */
     fun updateGlobalTemperature(temperature: Float) {
         globalTemperature = temperature
-        climateZones.forEach {
+        zones.forEach {
             it.updateTemperature(temperature)
         }
     }
@@ -82,7 +81,7 @@ class ClimateManager {
         var maxTemp: Float = globalTemperature
         val simpleLocation = location.toSimple()
 
-        for (zone in climateZones) {
+        for (zone in zones) {
             if (zone.contains(simpleLocation)) {
                 val tmp = zone.getTemperatureAt(simpleLocation)
                 if (tmp > maxTemp) {
