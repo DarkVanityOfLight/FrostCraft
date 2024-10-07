@@ -1,6 +1,7 @@
 package zones
 
 import net.axay.kspigot.extensions.geometry.SimpleLocation3D
+import org.bukkit.World
 
 interface IZone {
     val world: World
