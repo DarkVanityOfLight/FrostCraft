@@ -134,6 +134,7 @@ class ClimateManager {
     private val climateZones = mutableSetOf<ClimateZone>()
 
     fun addClimateZone(climateZone: ClimateZone) {
+        climateZone.updateTemperature(globalTemperature)
         climateZones.add(climateZone)
     }
 
@@ -147,6 +148,14 @@ class ClimateManager {
 
     fun createClimateZone(world: World, center: SimpleLocation3D, radius: Float, tempFunc: (Float) -> Float) {
         createClimateZone(world, Coordinate(center), radius, tempFunc)
+    }
+
+    fun removeClimateZoneAt(world: World, center: Coordinate) {
+        climateZones.removeIf { it.world == world && it.center == center }
+    }
+
+    fun removeClimateZoneAt(world: World, center: SimpleLocation3D) {
+        removeClimateZoneAt(world, Coordinate(center))
     }
 
     fun updateGlobalTemperature(temperature: Float){
