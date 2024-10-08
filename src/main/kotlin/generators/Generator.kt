@@ -16,6 +16,8 @@ import org.bukkit.block.Chest
 import org.bukkit.block.data.type.Furnace
 import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.inventory.ItemStack
+import zones.HeatZone
+import kotlin.math.pow
 
 /**
  * Represents the state of the generator.
@@ -94,7 +96,12 @@ class Generator(
      * Generates a climate zone around the generator.
      */
     private fun generateZone() {
-        Manager.climateManager.createClimateZone(world, origin, radius.toFloat()) { tmp -> tmp + heat }
+        val heatZone = HeatZone(world, origin, radius.toFloat()) { globalTemp, distance ->
+            globalTemp + (heat / distance.toDouble().pow(2.0).toFloat())
+        }
+
+        Manager.climateManager.addClimateZone(heatZone)
+
     }
 
     /**

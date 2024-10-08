@@ -10,7 +10,8 @@ data class HeatZone(
     val radius: Float,
     val tempFunction: (Float, Float) -> Float
 ) : IZone {
-    private var globalTemperature = 0.0f
+    // TODO this is off here or wrongly named
+    private var globalTemperature = 293.15f
 
     override fun contains(point: SimpleLocation3D): Boolean {
         val (cx, cy, cz) = center

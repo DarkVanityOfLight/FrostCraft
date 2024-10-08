@@ -29,9 +29,15 @@ class FrostCraft : KSpigot() {
         playerManager = PlayerManager()
         climateManager = ClimateManager()
 
-        command("temperature") {
+        command("bodyTemperature") {
             runs {
-                this.player.sendActionBar(literalText("${playerManager.getPlayer(player.uniqueId)!!.temperature} °C"))
+                this.player.sendActionBar(literalText("${playerManager.getPlayer(player.uniqueId)!!.temperature} °K"))
+            }
+        }
+
+        command("envTemperature") {
+            runs {
+                this.player.sendActionBar(literalText("${playerManager.getPlayer(player.uniqueId)!!.targetTemperature(player)} °K"))
             }
         }
 
@@ -85,7 +91,7 @@ class FrostCraft : KSpigot() {
                         // Create generator
                         generator = Generator(
                             60, blocks[0].location.toSimple(), blocks[0],
-                            1, 100.0f, 1.0f, blocks[0].world
+                            1, 373.15f, 1.0f, blocks[0].world
                         )
                         generator!!.addBlocks(blocks)
                         Bukkit.getLogger().info("Generator created")

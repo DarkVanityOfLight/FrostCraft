@@ -90,7 +90,7 @@ fun isEnclosed(location3D: SimpleLocation3D, world: World): Pair<Boolean, List<M
  * @return The calculated insulation value.
  */
 fun calculateInsulation(enclosingBlock: List<Material>): Float {
-    var insulation = 0.0f
+    var insulation = 1.0f
 
     if (enclosingBlock.isEmpty()) {
         return insulation
