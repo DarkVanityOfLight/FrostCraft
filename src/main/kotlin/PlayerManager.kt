@@ -1,7 +1,9 @@
 import net.axay.kspigot.event.listen
 import org.bukkit.Bukkit
+import org.bukkit.GameMode
 import org.bukkit.entity.Player
 import org.bukkit.event.entity.PlayerDeathEvent
+import org.bukkit.event.player.PlayerGameModeChangeEvent
 import org.bukkit.event.player.PlayerJoinEvent
 import org.bukkit.event.player.PlayerQuitEvent
 import java.util.*
@@ -32,6 +34,13 @@ class PlayerManager {
                     it.deathMessage = "${it.entity.name} died from the cold"
                     players[it.entity.uniqueId]!!.diedFromFrost = false
                 }
+            }
+        }
+
+        listen<PlayerGameModeChangeEvent> {
+            if (it.newGameMode == GameMode.SPECTATOR || it.newGameMode == GameMode.CREATIVE) {
+                players[it.player.uniqueId]?.unfreeze(it.player)
+                players[it.player.uniqueId]?.removeColdEffects(it.player)
             }
         }
 

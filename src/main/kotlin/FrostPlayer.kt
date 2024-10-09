@@ -10,14 +10,14 @@ import org.bukkit.event.entity.EntityDamageEvent
 import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
 
-const val dmg = 0.5
+const val dmg = 0.1
 const val bodyTemp = 310.0f
 
 const val toleranceBuffer = 2.0f  // Buffer before effects are applied
 const val criticalLowTemp = 263.15f  // Critical low temperature threshold
 const val mildEffectsThreshold = 273.15f  // Threshold for mild effects
 const val moderateEffectsThreshold = 268.15f  // Threshold for moderate effects
-const val gradualTemperatureChangeRate = 0.1f
+const val gradualTemperatureChangeRate = 1f
 
 /**
  * Manages the player's temperature and applies effects based on the temperature.
@@ -30,6 +30,8 @@ class FrostPlayer(var playerId: java.util.UUID) {
     var temperature: Float = bodyTemp
     var diedFromFrost = false
     private var coldMessageInterval = 0
+    private var frozen = false
+
 
     /**
      * Updates the player's temperature based on heat sources, insulation, and zone temperature.
@@ -111,6 +113,7 @@ class FrostPlayer(var playerId: java.util.UUID) {
                 temperature < criticalLowTemp -> {
                     // Severe cold effects: constant damage
                     applyColdDamage(player, dmg * 2)
+                    freeze(player)
                 }
                 temperature < moderateEffectsThreshold -> {
                     // Moderate cold effects: slowness, weakness, minor damage
@@ -125,6 +128,10 @@ class FrostPlayer(var playerId: java.util.UUID) {
             }
         } else {
             // Player is warming up or within comfort range, remove cold effects
+            if(frozen){
+                unfreeze(player)
+            }
+
             removeColdEffects(player)
             coldMessageInterval = 0
         }
@@ -168,10 +175,21 @@ class FrostPlayer(var playerId: java.util.UUID) {
         }
     }
 
-    private fun removeColdEffects(player: Player) {
+    fun removeColdEffects(player: Player) {
         // Remove all cold-related potion effects when the player warms up
         player.removePotionEffect(PotionEffectType.SLOWNESS)
         player.removePotionEffect(PotionEffectType.WEAKNESS)
         player.removePotionEffect(PotionEffectType.HUNGER)
+    }
+
+    // TODO freeze gradually
+    private fun freeze(player: Player){
+        frozen = true
+        player.freezeTicks = Int.MAX_VALUE
+    }
+
+    fun unfreeze(player: Player){
+        frozen = false
+        player.freezeTicks = 0
     }
 }
