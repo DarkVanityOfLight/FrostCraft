@@ -13,9 +13,11 @@ import org.bukkit.Material
 import org.bukkit.block.Block
 import org.bukkit.block.Chest
 import org.bukkit.block.data.type.Furnace
+import org.bukkit.event.block.BlockBreakEvent
 import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.inventory.ItemStack
 import zones.HeatZone
+import kotlin.math.max
 import kotlin.math.pow
 
 // Constants
@@ -76,7 +78,15 @@ class Generator(private val origin: Block) {
 
     init {
         discoverStructure()
+        // TODO Check if structure is complete
         listenForPlayerInteraction()
+
+        listen<BlockBreakEvent> {
+            if (it.block in structure) {
+                removeBlockFromStructure(it.block)
+                // TODO Check if we have a block of type control, heat intake left
+            }
+        }
     }
 
     private fun discoverStructure() {
@@ -105,6 +115,20 @@ class Generator(private val origin: Block) {
         }
         if (added) structure.add(block)
         return added
+    }
+
+    private fun removeBlockFromStructure(block: Block): Boolean {
+        val removed = when (block.type) {
+            in HEAT_BLOCKS -> heatBlocks.remove(block)
+            in CONTROL_BLOCKS -> controlBlocks.remove(block)
+            in STRUCTURE_BLOCKS -> structureBlocks.remove(block)
+            in DISSIPATION_BLOCKS -> dissipationBlocks.remove(block)
+            in EXHAUST_BLOCKS -> exhaustBlocks.remove(block)
+            Material.CHEST -> intakes.remove(block)
+            else -> false
+        }
+        if (removed) structure.remove(block)
+        return removed
     }
 
     private fun listenForPlayerInteraction() {
@@ -136,6 +160,55 @@ class Generator(private val origin: Block) {
                     }
                     it.player.closeInventory()
                 }
+
+                pageChanger(Slots.RowOneSlotFive, ItemStack(Material.PAPER), 2, null, null)
+            }
+            
+            page(2) {
+                placeholder(Slots.Border, ItemStack(Material.BLACK_STAINED_GLASS_PANE))
+
+                // Display fuel consumption
+                val consumptionStack = ItemStack(Material.COAL)
+                consumptionStack.itemMeta = consumptionStack.itemMeta.apply {
+                    displayName(Component.text("Fuel"))
+                    lore(listOf(Component.text("Consumption: $consumption")))
+                }
+
+                // Display heat
+                val heatStack = ItemStack(Material.BLAZE_POWDER)
+                heatStack.itemMeta = heatStack.itemMeta.apply {
+                    displayName(Component.text("Heat"))
+                    lore(listOf(Component.text("Heat: $heat °K")))
+                }
+
+                // Display stress
+                val stressStack = ItemStack(Material.REDSTONE)
+                stressStack.itemMeta = stressStack.itemMeta.apply {
+                    displayName(Component.text("Stress"))
+                    lore(listOf(Component.text("Stress: $stress")))
+                }
+
+                // Display durability
+                val durabilityStack = ItemStack(Material.DIAMOND)
+                durabilityStack.itemMeta = durabilityStack.itemMeta.apply {
+                    displayName(Component.text("Durability"))
+                    lore(listOf(Component.text("Durability: $durability")))
+                }
+
+                // Display range
+                val rangeStack = ItemStack(Material.BLAZE_ROD)
+                rangeStack.itemMeta = rangeStack.itemMeta.apply {
+                    displayName(Component.text("Range"))
+                    lore(listOf(Component.text("Range: $range")))
+                }
+
+                // Display all stacks
+                placeholder(Slots.RowOneSlotOne, consumptionStack)
+                placeholder(Slots.RowOneSlotTwo, heatStack)
+                placeholder(Slots.RowOneSlotThree, stressStack)
+                placeholder(Slots.RowOneSlotFour, durabilityStack)
+                placeholder(Slots.RowOneSlotFive, rangeStack)
+
             }
         }
         event.player.openGUI(gui)
@@ -155,7 +228,7 @@ class Generator(private val origin: Block) {
     }
 
     private fun calculateStress() {
-        stress = dissipationBlocks.size * DISSIPATION_BLOCK_STRESS - controlBlocks.size * CONTROL_BLOCKS_STRESS_DECREASE
+        stress = max( dissipationBlocks.size * DISSIPATION_BLOCK_STRESS - controlBlocks.size * CONTROL_BLOCKS_STRESS_DECREASE, 0.0f)
     }
 
     private fun calculateRange() {
