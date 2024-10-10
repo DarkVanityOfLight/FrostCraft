@@ -64,7 +64,7 @@ class Generator(private val origin: Block) {
     private var durability: Float = 0.0f
     private var consumption: Int = 1
     private var range = 10.0f
-    private var consumerId: Int? = null
+    private var runTaskId: Int? = null
 
     private val structure: MutableSet<Block> = mutableSetOf()
     private val intakes: MutableSet<Block> = mutableSetOf()
@@ -210,16 +210,16 @@ class Generator(private val origin: Block) {
         Bukkit.getLogger().info("Powering on generator")
         setFurnacesLit(true)
         generateZone()
-        consumerId = Bukkit.getScheduler().scheduleSyncRepeatingTask(Manager, this::run, 5, 20)
-        if (consumerId == -1) {
+        runTaskId = Bukkit.getScheduler().scheduleSyncRepeatingTask(Manager, this::run, 5, 20)
+        if (runTaskId == -1) {
             Bukkit.getLogger().severe("Failed to start generator consumer")
         }
         state = GeneratorState.ON
     }
 
     fun powerOff() {
-        consumerId?.let { Bukkit.getScheduler().cancelTask(it) }
-        consumerId = null
+        runTaskId?.let { Bukkit.getScheduler().cancelTask(it) }
+        runTaskId = null
         setFurnacesLit(false)
         removeZone()
         state = GeneratorState.OFF
