@@ -2,7 +2,6 @@ package generators
 
 import Manager
 import net.axay.kspigot.event.listen
-import net.axay.kspigot.extensions.geometry.SimpleLocation3D
 import net.axay.kspigot.extensions.geometry.toSimple
 import net.axay.kspigot.gui.GUIType
 import net.axay.kspigot.gui.Slots
@@ -11,7 +10,6 @@ import net.axay.kspigot.gui.openGUI
 import net.kyori.adventure.text.Component
 import org.bukkit.Bukkit
 import org.bukkit.Material
-import org.bukkit.World
 import org.bukkit.block.Block
 import org.bukkit.block.Chest
 import org.bukkit.block.data.type.Furnace
@@ -25,7 +23,15 @@ val HEAT_BLOCKS = setOf(Material.FURNACE, Material.BLAST_FURNACE, Material.SMOKE
 val CONTROL_BLOCKS = setOf(Material.REDSTONE_BLOCK) // Decreases stress
 val STRUCTURE_BLOCKS = setOf(Material.IRON_BLOCK, Material.GOLD_BLOCK, Material.DIAMOND_BLOCK, Material.NETHERITE_BLOCK) // Increases durability
 val DISSIPATION_BLOCKS = setOf(Material.DISPENSER, Material.DROPPER) // Increases range, increases stress
-val EXHAUST_BLOCKS = setOf(Material.CAMPFIRE) // Increases stress, increases heat
+val EXHAUST_BLOCKS = setOf(Material.CAMPFIRE) // Decrease stress, increases heat
+
+const val HEAT_BLOCK_HEAT = 50.0f
+const val EXHAUST_HEAT = 25.0f
+const val DISSIPATION_BLOCK_RANGE = 5.0f
+const val DISSIPATION_BLOCK_STRESS = 10.0f
+const val CONTROL_BLOCKS_STRESS_DECREASE = 5.0f
+const val BASE_HEAT_RANGE = 10.0f
+const val STRUCTURE_BLOCK_DURABILITY = 10.0f
 
 /**
  * Represents the state of the generator.
@@ -171,6 +177,34 @@ class Generator(
         }
     }
 
+    // Called every second
+    private fun run() {
+
+        // Calculate heat, // TODO do this dynamically for startup/shutdown
+        this.heat = heatBlocks.size * HEAT_BLOCK_HEAT + exhaustBlocks.size * EXHAUST_HEAT
+
+        // Calculate stress
+        this.stress = dissipationBlocks.size * DISSIPATION_BLOCK_STRESS - controlBLocks.size * CONTROL_BLOCKS_STRESS_DECREASE
+
+        // Calculate range
+        this.range = BASE_HEAT_RANGE + dissipationBlocks.size * DISSIPATION_BLOCK_RANGE
+
+        // Calculate durability
+        this.durability = structureBlocks.size * STRUCTURE_BLOCK_DURABILITY
+
+        // Update zone
+        updateZone()
+
+        // Consume fuel
+        consumeFuel()
+
+    }
+
+    private fun updateZone() {
+        removeZone()
+        generateZone()
+    }
+
     /**
      * Generates a climate zone around the generator.
      */
@@ -248,8 +282,8 @@ class Generator(
 
         generateZone()
 
-        // TODO Change this to not only consuming fuel but doing everything aroudn the generator, eg increasing stress, heat, etc
-        consumerId = Bukkit.getScheduler().scheduleSyncRepeatingTask(Manager, this::consumeFuel, 5, 20)
+        // TODO Change this to not only consuming fuel but doing everything around the generator, eg increasing stress, heat, etc
+        consumerId = Bukkit.getScheduler().scheduleSyncRepeatingTask(Manager, this::run, 5, 20)
 
         if (consumerId == -1) {
             Bukkit.getLogger().severe("Failed to start generator consumer")
@@ -290,23 +324,5 @@ class Generator(
                 intakes.add(block)
             }
         }
-    }
-
-    /**
-     * Adds a block to the generator's structure.
-     *
-     * @param block The block to add.
-     */
-    fun addBlock(block: Block) {
-        structure.add(block)
-    }
-
-    /**
-     * Adds multiple blocks to the generator's structure.
-     *
-     * @param blocks The list of blocks to add.
-     */
-    fun addBlocks(blocks: List<Block>) {
-        structure.addAll(blocks)
     }
 }
