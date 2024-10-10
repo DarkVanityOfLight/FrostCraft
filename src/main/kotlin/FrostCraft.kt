@@ -1,4 +1,5 @@
 import generators.Generator
+import generators.InvalidStructureException
 import net.axay.kspigot.chat.literalText
 import net.axay.kspigot.commands.argument
 import net.axay.kspigot.commands.command
@@ -79,33 +80,18 @@ class FrostCraft : KSpigot() {
         command("createGenerator") {
             runs {
                 var listener: SingleListener<PlayerInteractEvent>? = null
-                var clicks = 0
-                val blocks: MutableList<Block> = mutableListOf()
 
                 listener = listen<PlayerInteractEvent> { playerInteractEvent ->
-                    playerInteractEvent.isCancelled = true
-                    playerInteractEvent.clickedBlock?.let { blocks.add(it) }
-                    clicks++
-                    if (clicks == 4) {
+                    playerInteractEvent.clickedBlock?.let {
+                        playerInteractEvent.isCancelled = true
                         listener!!.unregister()
-                        // Create generator
-                        generator = Generator(
-                            60, blocks[0].location.toSimple(), blocks[0],
-                            1, 373.15f, 1.0f, blocks[0].world
-                        )
-                        generator!!.addBlocks(blocks)
-                        Bukkit.getLogger().info("Generator created")
-
-
+                        try {
+                            generator = Generator(it)
+                        } catch (e : InvalidStructureException) {
+                            playerInteractEvent.player.sendMessage("Invalid structure, a generator needs an intake, a heat source, and a control panel")
+                        }
                     }
                 }
-            }
-        }
-
-        command("powerOn") {
-            runs {
-                generator!!.findIntakes()
-                generator!!.powerOn()
             }
         }
 
