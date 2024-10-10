@@ -20,12 +20,11 @@ import zones.HeatZone
 import kotlin.math.max
 import kotlin.math.pow
 
-// Constants
-val HEAT_BLOCKS = setOf(Material.FURNACE, Material.BLAST_FURNACE, Material.SMOKER)
-val CONTROL_BLOCKS = setOf(Material.REDSTONE_BLOCK)
-val STRUCTURE_BLOCKS = setOf(Material.IRON_BLOCK, Material.GOLD_BLOCK, Material.DIAMOND_BLOCK, Material.NETHERITE_BLOCK)
-val DISSIPATION_BLOCKS = setOf(Material.DISPENSER, Material.DROPPER)
-val EXHAUST_BLOCKS = setOf(Material.CAMPFIRE)
+val HEAT_BLOCKS = setOf(Material.FURNACE, Material.BLAST_FURNACE, Material.SMOKER) // Increases Heat, increase fuel consumption
+val CONTROL_BLOCKS = setOf(Material.REDSTONE_BLOCK) // Decreases stress
+val STRUCTURE_BLOCKS = setOf(Material.IRON_BLOCK, Material.GOLD_BLOCK, Material.DIAMOND_BLOCK, Material.NETHERITE_BLOCK) // Increases durability
+val DISSIPATION_BLOCKS = setOf(Material.DISPENSER, Material.DROPPER) // Increases range, increases stress
+val EXHAUST_BLOCKS = setOf(Material.CAMPFIRE) // Decrease stress, increases heat/ Constants
 
 const val HEAT_BLOCK_HEAT = 50.0f
 const val EXHAUST_HEAT = 25.0f
@@ -86,7 +85,9 @@ class Generator(private val origin: Block) {
         listen<BlockBreakEvent> {
             if (it.block in structure) {
                 removeBlockFromStructure(it.block)
-                // TODO Check if we have a block of type control, heat intake left
+                if(!isValidStructure()){
+                    powerOff()
+                }
             }
         }
     }
@@ -283,6 +284,11 @@ class Generator(private val origin: Block) {
     fun powerOn() {
         if (!hasFuel()) {
             Bukkit.getLogger().info("No fuel")
+            return
+        }
+
+        if(!isValidStructure()){
+            Bukkit.getLogger().info("Invalid structure")
             return
         }
 
