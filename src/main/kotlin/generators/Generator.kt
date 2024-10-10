@@ -40,6 +40,8 @@ enum class GeneratorState {
     ON, OFF, POWERING_ON, POWERING_OFF
 }
 
+class InvalidStructureException : Exception("Invalid structure")
+
 // Utility functions
 fun getNeighbors(block: Block): List<Block> {
     val neighbors = mutableListOf<Block>()
@@ -78,7 +80,7 @@ class Generator(private val origin: Block) {
 
     init {
         discoverStructure()
-        // TODO Check if structure is complete
+        if (!isValidStructure()) { throw InvalidStructureException() }
         listenForPlayerInteraction()
 
         listen<BlockBreakEvent> {
@@ -101,6 +103,10 @@ class Generator(private val origin: Block) {
                 stack.addAll(getNeighbors(current).filter { it !in visited })
             }
         }
+    }
+
+    private fun isValidStructure(): Boolean {
+        return controlBlocks.isNotEmpty() && heatBlocks.isNotEmpty() && intakes.isNotEmpty()
     }
 
     private fun addBlockToStructure(block: Block): Boolean {
@@ -294,6 +300,7 @@ class Generator(private val origin: Block) {
         runTaskId?.let { Bukkit.getScheduler().cancelTask(it) }
         runTaskId = null
         setFurnacesLit(false)
+        heat = 0.0f
         removeZone()
         state = GeneratorState.OFF
     }
