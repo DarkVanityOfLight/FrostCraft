@@ -130,7 +130,6 @@ class Generator(private val origin: Block) {
                 }
                 button(Slots.RowOneSlotThree, stack) {
                     if (state == GeneratorState.OFF) {
-                        findIntakes()
                         powerOn()
                     } else {
                         powerOff()
@@ -237,11 +236,4 @@ class Generator(private val origin: Block) {
         }
     }
 
-    fun findIntakes() {
-        structure.forEach { block ->
-            if (block.type == Material.CHEST) {
-                intakes.add(block)
-            }
-        }
-    }
 }
