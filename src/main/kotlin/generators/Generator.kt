@@ -20,6 +20,8 @@ import zones.HeatZone
 import kotlin.math.max
 import kotlin.math.pow
 
+// TODO Melt snow in a radius around the generator, maybe do this in zones tho
+
 val HEAT_BLOCKS = setOf(Material.FURNACE, Material.BLAST_FURNACE, Material.SMOKER) // Increases Heat, increase fuel consumption
 val CONTROL_BLOCKS = setOf(Material.REDSTONE_BLOCK) // Decreases stress
 val STRUCTURE_BLOCKS = setOf(Material.IRON_BLOCK, Material.GOLD_BLOCK, Material.DIAMOND_BLOCK, Material.NETHERITE_BLOCK) // Increases durability
@@ -33,6 +35,8 @@ const val DISSIPATION_BLOCK_STRESS = 10.0f
 const val CONTROL_BLOCKS_STRESS_DECREASE = 5.0f
 const val BASE_HEAT_RANGE = 10.0f
 const val STRUCTURE_BLOCK_DURABILITY = 10.0f
+
+const val UPDATE_TICK_RATE = 20
 
 // Enums
 enum class GeneratorState {
@@ -281,34 +285,37 @@ class Generator(private val origin: Block) {
         return intakes.any { (it.state as Chest).blockInventory.contains(Material.COAL) }
     }
 
-    fun powerOn() {
+    fun powerOn() : Boolean {
         if (!hasFuel()) {
             Bukkit.getLogger().info("No fuel")
-            return
+            return false
         }
 
         if(!isValidStructure()){
             Bukkit.getLogger().info("Invalid structure")
-            return
+            return false
         }
 
         Bukkit.getLogger().info("Powering on generator")
         setFurnacesLit(true)
         generateZone()
-        runTaskId = Bukkit.getScheduler().scheduleSyncRepeatingTask(Manager, this::run, 5, 20)
+        runTaskId = Bukkit.getScheduler().scheduleSyncRepeatingTask(Manager, this::run, 5, UPDATE_TICK_RATE.toLong())
         if (runTaskId == -1) {
             Bukkit.getLogger().severe("Failed to start generator consumer")
+            return false
         }
         state = GeneratorState.ON
+        return true
     }
 
-    fun powerOff() {
+    fun powerOff() : Boolean {
         runTaskId?.let { Bukkit.getScheduler().cancelTask(it) }
         runTaskId = null
         setFurnacesLit(false)
         heat = 0.0f
         removeZone()
         state = GeneratorState.OFF
+        return true
     }
 
     private fun setFurnacesLit(lit: Boolean) {
