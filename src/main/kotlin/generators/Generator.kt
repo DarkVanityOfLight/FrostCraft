@@ -64,6 +64,7 @@ fun getNeighbors(block: Block): List<Block> {
 }
 
 // Generator class
+// TODO Increase stress slowly over time and break generator if stress is too high
 class Generator(private val origin: Block) {
     private var stress: Float = 0.0f
     private var heat: Float = 0.0f

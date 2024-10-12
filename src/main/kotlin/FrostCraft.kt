@@ -18,14 +18,19 @@ class FrostCraft : KSpigot() {
         lateinit var INSTANCE: FrostCraft; private set
     }
 
+    lateinit var configParser: ConfigParser
     lateinit var playerManager: PlayerManager
     lateinit var climateManager: ClimateManager
 
     override fun load() {
         INSTANCE = this
+        saveDefaultConfig()
     }
 
     override fun startup() {
+
+        configParser = ConfigParser(config)
+        configParser.parseConfig()
 
         playerManager = PlayerManager()
         climateManager = ClimateManager()
