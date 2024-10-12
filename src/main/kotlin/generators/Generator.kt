@@ -22,19 +22,7 @@ import kotlin.math.pow
 
 // TODO Melt snow in a radius around the generator, maybe do this in zones tho
 
-val HEAT_BLOCKS = setOf(Material.FURNACE, Material.BLAST_FURNACE, Material.SMOKER) // Increases Heat, increase fuel consumption
-val CONTROL_BLOCKS = setOf(Material.REDSTONE_BLOCK) // Decreases stress
-val STRUCTURE_BLOCKS = setOf(Material.IRON_BLOCK, Material.GOLD_BLOCK, Material.DIAMOND_BLOCK, Material.NETHERITE_BLOCK) // Increases durability
-val DISSIPATION_BLOCKS = setOf(Material.DISPENSER, Material.DROPPER) // Increases range, increases stress
-val EXHAUST_BLOCKS = setOf(Material.CAMPFIRE) // Decrease stress, increases heat/ Constants
-
-const val HEAT_BLOCK_HEAT = 50.0f
-const val EXHAUST_HEAT = 25.0f
-const val DISSIPATION_BLOCK_RANGE = 5.0f
-const val DISSIPATION_BLOCK_STRESS = 10.0f
-const val CONTROL_BLOCKS_STRESS_DECREASE = 5.0f
 const val BASE_HEAT_RANGE = 10.0f
-const val STRUCTURE_BLOCK_DURABILITY = 10.0f
 
 const val UPDATE_TICK_RATE = 20
 
@@ -71,7 +59,7 @@ class Generator(private val origin: Block) {
     private var state: GeneratorState = GeneratorState.OFF
     private var durability: Float = 0.0f
     private var consumption: Int = 1
-    private var range = 10.0f
+    private var range = BASE_HEAT_RANGE
     private var runTaskId: Int? = null
 
     private val structure: MutableSet<Block> = mutableSetOf()
@@ -117,11 +105,11 @@ class Generator(private val origin: Block) {
 
     private fun addBlockToStructure(block: Block): Boolean {
         val added = when (block.type) {
-            in HEAT_BLOCKS -> heatBlocks.add(block)
-            in CONTROL_BLOCKS -> controlBlocks.add(block)
-            in STRUCTURE_BLOCKS -> structureBlocks.add(block)
-            in DISSIPATION_BLOCKS -> dissipationBlocks.add(block)
-            in EXHAUST_BLOCKS -> exhaustBlocks.add(block)
+            in Manager.configParser.generatorHeatBlocks -> heatBlocks.add(block)
+            in Manager.configParser.generatorControlBlocks -> controlBlocks.add(block)
+            in Manager.configParser.generatorStructureBlocks -> structureBlocks.add(block)
+            in Manager.configParser.generatorDissipationBlocks -> dissipationBlocks.add(block)
+            in Manager.configParser.generatorExhaustBlocks -> exhaustBlocks.add(block)
             Material.CHEST -> intakes.add(block)
             else -> false
         }
@@ -131,11 +119,11 @@ class Generator(private val origin: Block) {
 
     private fun removeBlockFromStructure(block: Block): Boolean {
         val removed = when (block.type) {
-            in HEAT_BLOCKS -> heatBlocks.remove(block)
-            in CONTROL_BLOCKS -> controlBlocks.remove(block)
-            in STRUCTURE_BLOCKS -> structureBlocks.remove(block)
-            in DISSIPATION_BLOCKS -> dissipationBlocks.remove(block)
-            in EXHAUST_BLOCKS -> exhaustBlocks.remove(block)
+            in Manager.configParser.generatorHeatBlocks -> heatBlocks.remove(block)
+            in Manager.configParser.generatorControlBlocks -> controlBlocks.remove(block)
+            in Manager.configParser.generatorStructureBlocks -> structureBlocks.remove(block)
+            in Manager.configParser.generatorDissipationBlocks -> dissipationBlocks.remove(block)
+            in Manager.configParser.generatorExhaustBlocks -> exhaustBlocks.remove(block)
             Material.CHEST -> intakes.remove(block)
             else -> false
         }
@@ -236,19 +224,19 @@ class Generator(private val origin: Block) {
     }
 
     private fun calculateHeat() {
-        heat = heatBlocks.size * HEAT_BLOCK_HEAT + exhaustBlocks.size * EXHAUST_HEAT
+        heat = heatBlocks.size * Manager.configParser.generatorHeatBlockHeat + exhaustBlocks.size * Manager.configParser.generatorExhaustHeat
     }
 
     private fun calculateStress() {
-        stress = max( dissipationBlocks.size * DISSIPATION_BLOCK_STRESS - controlBlocks.size * CONTROL_BLOCKS_STRESS_DECREASE, 0.0f)
+        stress = max( dissipationBlocks.size * Manager.configParser.generatorDissipationBlockStress - controlBlocks.size * Manager.configParser.generatorControlBlocksStressDecrease, 0.0f)
     }
 
     private fun calculateRange() {
-        range = BASE_HEAT_RANGE + dissipationBlocks.size * DISSIPATION_BLOCK_RANGE
+        range = BASE_HEAT_RANGE + dissipationBlocks.size * Manager.configParser.generatorDissipationBlockRange
     }
 
     private fun calculateDurability() {
-        durability = structureBlocks.size * STRUCTURE_BLOCK_DURABILITY
+        durability = structureBlocks.size * Manager.configParser.generatorStructureBlockDurability
     }
 
     private fun updateZone() {

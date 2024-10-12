@@ -26,7 +26,7 @@ const val DEFAULT_BASE_HEAT_RANGE = 10.0f
 const val DEFAULT_STRUCTURE_BLOCK_DURABILITY = 10.0f
 
 
-class ConfigParser(val config: Configuration) {
+class ConfigParser(private val config: Configuration) {
     var globalBaseTemperature: Float by Delegates.notNull()
         private set
 

@@ -10,7 +10,8 @@ import zones.IZone
  * Manages the climate zones and global temperature.
  */
 class ClimateManager {
-    var globalTemperature = 253.15f
+    var globalTemperature = Manager.configParser.globalBaseTemperature
+        private set
     private val zones = mutableSetOf<IZone>()
 
     /**

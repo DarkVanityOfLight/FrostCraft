@@ -10,15 +10,6 @@ import org.bukkit.event.entity.EntityDamageEvent
 import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
 
-const val dmg = 0.1
-const val bodyTemp = 310.0f
-
-const val toleranceBuffer = 2.0f  // Buffer before effects are applied
-const val criticalLowTemp = 263.15f  // Critical low temperature threshold
-const val mildEffectsThreshold = 273.15f  // Threshold for mild effects
-const val moderateEffectsThreshold = 268.15f  // Threshold for moderate effects
-const val gradualTemperatureChangeRate = 1f
-
 /**
  * Manages the player's temperature and applies effects based on the temperature.
  *
@@ -27,7 +18,7 @@ const val gradualTemperatureChangeRate = 1f
  *
  */
 class FrostPlayer(var playerId: java.util.UUID) {
-    var temperature: Float = bodyTemp
+    var temperature: Float = Manager.configParser.playerBodyTemperature
     var diedFromFrost = false
     private var coldMessageInterval = 0
     private var frozen = false
@@ -47,10 +38,11 @@ class FrostPlayer(var playerId: java.util.UUID) {
         // Gradually adjust the player's temperature
         val targetTemperature = insulationFactor * (heatSourceContribution + zoneTemperature)
 
+        // TODO let the change rate be influenced by the player's clothing
         if (temperature < targetTemperature) {
-            temperature += gradualTemperatureChangeRate
+            temperature += Manager.configParser.playerGradualTemperatureChangeRate
         } else if (temperature > targetTemperature) {
-            temperature -= gradualTemperatureChangeRate
+            temperature -= Manager.configParser.playerGradualTemperatureChangeRate
         }
     }
 
@@ -108,20 +100,20 @@ class FrostPlayer(var playerId: java.util.UUID) {
      * @param player The player to apply effects to.
      */
     private fun applyTemperatureEffects(player: Player) {
-        if (temperature < bodyTemp - toleranceBuffer) {
+        if (temperature < Manager.configParser.playerBodyTemperature - Manager.configParser.playerToleranceBuffer) {
             when {
-                temperature < criticalLowTemp -> {
+                temperature < Manager.configParser.playerCriticalLowTemp -> {
                     // Severe cold effects: constant damage
-                    applyColdDamage(player, dmg * 2)
+                    applyColdDamage(player, Manager.configParser.playerTemperatureDamage * 2)
                     freeze(player)
                 }
-                temperature < moderateEffectsThreshold -> {
+                temperature < Manager.configParser.playerModerateEffectsThreshold -> {
                     // Moderate cold effects: slowness, weakness, minor damage
                     applyColdEffects(player)
-                    applyColdDamage(player, dmg)
+                    applyColdDamage(player, Manager.configParser.playerTemperatureDamage)
                 }
 
-                temperature < mildEffectsThreshold -> {
+                temperature < Manager.configParser.playerMildEffectsThreshold -> {
                     // Mild cold effects: slowness, hunger
                     applyColdEffects(player, mild = true)
                 }
@@ -138,7 +130,7 @@ class FrostPlayer(var playerId: java.util.UUID) {
     }
 
 
-    private fun applyColdDamage(player: Player, damage: Double) {
+    private fun applyColdDamage(player: Player, damage: Float) {
         if (coldMessageInterval == 0) {
             player.sendActionBar(literalText("You are freezing!") {
                 italic = true
@@ -150,7 +142,7 @@ class FrostPlayer(var playerId: java.util.UUID) {
         if (coldMessageInterval >= 20) coldMessageInterval = 0
 
         val source = DamageSource.builder(DamageType.FREEZE).build()
-        val event = EntityDamageEvent(player, EntityDamageEvent.DamageCause.FREEZE, source, damage)
+        val event = EntityDamageEvent(player, EntityDamageEvent.DamageCause.FREEZE, source, damage.toDouble())
         Bukkit.getPluginManager().callEvent(event)
 
         if (!event.isCancelled) {
