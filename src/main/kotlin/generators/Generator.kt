@@ -21,6 +21,8 @@ import kotlin.math.max
 import kotlin.math.pow
 
 // TODO Melt snow in a radius around the generator, maybe do this in zones tho
+// TODO Power on/off slowly instead of instantly
+// TODO Increase stress slowly over time and break generator if stress is too high
 
 const val BASE_HEAT_RANGE = 10.0f
 

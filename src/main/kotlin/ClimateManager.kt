@@ -1,5 +1,8 @@
+import net.axay.kspigot.chat.KColors
+import net.axay.kspigot.chat.literalText
 import net.axay.kspigot.extensions.geometry.SimpleLocation3D
 import net.axay.kspigot.extensions.geometry.toSimple
+import org.bukkit.Bukkit
 import org.bukkit.Location
 import org.bukkit.World
 import zones.ClimateZone
@@ -70,6 +73,13 @@ class ClimateManager {
         zones.forEach {
             it.updateTemperature(temperature)
         }
+        Bukkit.motd(literalText("FrostCraft\n") {
+            color = KColors.CYAN
+            bold = true
+            component(literalText ("$globalTemperature} °K "){
+                color = KColors.BLUE
+            })
+        })
     }
 
     /**

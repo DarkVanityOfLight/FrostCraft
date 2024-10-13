@@ -1,5 +1,6 @@
 import generators.Generator
 import generators.InvalidStructureException
+import net.axay.kspigot.chat.KColors
 import net.axay.kspigot.chat.literalText
 import net.axay.kspigot.commands.argument
 import net.axay.kspigot.commands.command
@@ -10,7 +11,6 @@ import net.axay.kspigot.event.unregister
 import net.axay.kspigot.extensions.geometry.toSimple
 import net.axay.kspigot.main.KSpigot
 import org.bukkit.Bukkit
-import org.bukkit.block.Block
 import org.bukkit.event.player.PlayerInteractEvent
 
 class FrostCraft : KSpigot() {
@@ -99,6 +99,14 @@ class FrostCraft : KSpigot() {
                 }
             }
         }
+
+        Bukkit.motd(literalText("FrostCraft\n") {
+            color = KColors.CYAN
+            bold = true
+            component(literalText ("${climateManager.globalTemperature} °K "){
+                color = KColors.BLUE
+            })
+        })
 
     }
 
