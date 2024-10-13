@@ -11,6 +11,7 @@ import net.kyori.adventure.text.Component
 import org.bukkit.Bukkit
 import org.bukkit.Material
 import org.bukkit.block.Block
+import org.bukkit.block.data.type.Campfire
 import org.bukkit.block.Chest
 import org.bukkit.block.data.type.Furnace
 import org.bukkit.event.block.BlockBreakEvent
@@ -23,6 +24,7 @@ import kotlin.math.pow
 // TODO Melt snow in a radius around the generator, maybe do this in zones tho
 // TODO Increase stress slowly over time and break generator if stress is too high
 // TODO Add particle effects
+// TODO Add overdrive
 
 const val BASE_HEAT_RANGE = 10.0f
 const val UPDATE_TICK_RATE = 20
@@ -308,7 +310,7 @@ class Generator(private val origin: Block) {
 
         targetHeat = calculateMaxHeat()
 
-        setFurnacesLit(true)
+        setBlocksLit(true)
 
         runTaskId = Bukkit.getScheduler().scheduleSyncRepeatingTask(Manager, this::run, 5, UPDATE_TICK_RATE.toLong())
         return runTaskId != -1
@@ -320,17 +322,26 @@ class Generator(private val origin: Block) {
         // runTaskId = null
 
         targetHeat = 0.0f
-        setFurnacesLit(false)
+        setBlocksLit(false)
         state = GeneratorState.OFF
         return true
     }
 
-    private fun setFurnacesLit(lit: Boolean) {
+    private fun setBlocksLit(lit: Boolean) {
         structure.forEach { block ->
             if (block.type == Material.FURNACE) {
                 val furnace = block.state.blockData as Furnace
                 furnace.isLit = lit
                 block.blockData = furnace
+                block.state.update()
+            }
+        }
+
+        structure.forEach { block ->
+            if (block.type == Material.CAMPFIRE) {
+                val campfire = block.state.blockData as Campfire
+                campfire.isLit = lit
+                block.blockData = campfire
                 block.state.update()
             }
         }
