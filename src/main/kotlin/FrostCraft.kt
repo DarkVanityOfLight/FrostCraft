@@ -25,12 +25,13 @@ class FrostCraft : KSpigot() {
     override fun load() {
         INSTANCE = this
         saveDefaultConfig()
-    }
-
-    override fun startup() {
 
         configParser = ConfigParser(config)
         configParser.parseConfig()
+
+    }
+
+    override fun startup() {
 
         playerManager = PlayerManager()
         climateManager = ClimateManager()
@@ -103,7 +104,7 @@ class FrostCraft : KSpigot() {
         Bukkit.motd(literalText("FrostCraft\n") {
             color = KColors.CYAN
             bold = true
-            component(literalText ("${climateManager.globalTemperature} °K "){
+            component(literalText ("Surviving at: ${climateManager.globalTemperature} °K "){
                 color = KColors.BLUE
             })
         })

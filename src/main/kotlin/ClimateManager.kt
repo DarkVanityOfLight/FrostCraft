@@ -76,7 +76,7 @@ class ClimateManager {
         Bukkit.motd(literalText("FrostCraft\n") {
             color = KColors.CYAN
             bold = true
-            component(literalText ("$globalTemperature} °K "){
+            component(literalText ("Surviving at: $globalTemperature} °K "){
                 color = KColors.BLUE
             })
         })
