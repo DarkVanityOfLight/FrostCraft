@@ -143,6 +143,7 @@ class Generator(private val origin: Block) {
         }
     }
 
+    // TODO Modularize this further
     private fun openControlPanel(event: PlayerInteractEvent) {
         val gui = kSpigotGUI(GUIType.ONE_BY_FIVE) {
             defaultPage = 1
@@ -272,6 +273,7 @@ class Generator(private val origin: Block) {
         Manager.climateManager.removeClimateZoneAt(origin.world, origin.location.toSimple())
     }
 
+    // TODO check that we have enough fuel
     private fun consumeFuel() {
         if (!hasFuel()) {
             powerOff()
