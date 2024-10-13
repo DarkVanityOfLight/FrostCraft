@@ -25,12 +25,12 @@ import kotlin.math.pow
 // TODO Increase stress slowly over time and break generator if stress is too high
 
 const val BASE_HEAT_RANGE = 10.0f
-
 const val UPDATE_TICK_RATE = 20
+const val TEMPERATURE_INCREASE_RATE = 50.0f
 
 // Enums
 enum class GeneratorState {
-    ON, OFF, POWERING_ON, POWERING_OFF
+    ON, OFF
 }
 
 class InvalidStructureException : Exception("Invalid structure")
@@ -63,6 +63,7 @@ class Generator(private val origin: Block) {
     private var consumption: Int = 1
     private var range = BASE_HEAT_RANGE
     private var runTaskId: Int? = null
+    private var targetHeat: Float = 0.0f
 
     private val structure: MutableSet<Block> = mutableSetOf()
     private val intakes: MutableSet<Block> = mutableSetOf()
@@ -226,7 +227,21 @@ class Generator(private val origin: Block) {
     }
 
     private fun calculateHeat() {
-        heat = heatBlocks.size * Manager.configParser.generatorHeatBlockHeat + exhaustBlocks.size * Manager.configParser.generatorExhaustHeat
+        heat = when {
+            heat < targetHeat -> (heat + TEMPERATURE_INCREASE_RATE).coerceAtMost(targetHeat)
+            heat > targetHeat -> (heat - TEMPERATURE_INCREASE_RATE).coerceAtLeast(targetHeat)
+            else -> heat  // Already at the target
+        }
+
+        if (heat == 0.0f && state == GeneratorState.OFF) {
+            runTaskId?.let { Bukkit.getScheduler().cancelTask(it) }
+             runTaskId = null
+        }
+
+    }
+
+    private fun calculateMaxHeat() : Float {
+        return heatBlocks.size * Manager.configParser.generatorHeatBlockHeat + exhaustBlocks.size * Manager.configParser.generatorExhaustHeat
     }
 
     private fun calculateStress() {
@@ -277,6 +292,7 @@ class Generator(private val origin: Block) {
     }
 
     fun powerOn() : Boolean {
+        discoverStructure()
         if (!hasFuel()) {
             Bukkit.getLogger().info("No fuel")
             return false
@@ -288,23 +304,28 @@ class Generator(private val origin: Block) {
         }
 
         Bukkit.getLogger().info("Powering on generator")
+
+        state = GeneratorState.ON
+
+        targetHeat = calculateMaxHeat()
+
         setFurnacesLit(true)
-        generateZone()
+
         runTaskId = Bukkit.getScheduler().scheduleSyncRepeatingTask(Manager, this::run, 5, UPDATE_TICK_RATE.toLong())
         if (runTaskId == -1) {
             Bukkit.getLogger().severe("Failed to start generator consumer")
             return false
         }
-        state = GeneratorState.ON
         return true
+
     }
 
     fun powerOff() : Boolean {
-        runTaskId?.let { Bukkit.getScheduler().cancelTask(it) }
-        runTaskId = null
+        // runTaskId?.let { Bukkit.getScheduler().cancelTask(it) }
+        // runTaskId = null
+
+        targetHeat = 0.0f
         setFurnacesLit(false)
-        heat = 0.0f
-        removeZone()
         state = GeneratorState.OFF
         return true
     }
