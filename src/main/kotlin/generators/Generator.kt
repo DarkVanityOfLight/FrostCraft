@@ -21,8 +21,8 @@ import kotlin.math.max
 import kotlin.math.pow
 
 // TODO Melt snow in a radius around the generator, maybe do this in zones tho
-// TODO Power on/off slowly instead of instantly
 // TODO Increase stress slowly over time and break generator if stress is too high
+// TODO Add particle effects
 
 const val BASE_HEAT_RANGE = 10.0f
 const val UPDATE_TICK_RATE = 20
@@ -294,16 +294,13 @@ class Generator(private val origin: Block) {
     fun powerOn() : Boolean {
         discoverStructure()
         if (!hasFuel()) {
-            Bukkit.getLogger().info("No fuel")
             return false
         }
 
         if(!isValidStructure()){
-            Bukkit.getLogger().info("Invalid structure")
             return false
         }
 
-        Bukkit.getLogger().info("Powering on generator")
 
         state = GeneratorState.ON
 
@@ -312,11 +309,7 @@ class Generator(private val origin: Block) {
         setFurnacesLit(true)
 
         runTaskId = Bukkit.getScheduler().scheduleSyncRepeatingTask(Manager, this::run, 5, UPDATE_TICK_RATE.toLong())
-        if (runTaskId == -1) {
-            Bukkit.getLogger().severe("Failed to start generator consumer")
-            return false
-        }
-        return true
+        return runTaskId != -1
 
     }
 
