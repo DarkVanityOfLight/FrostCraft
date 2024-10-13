@@ -1,3 +1,4 @@
+import org.bukkit.Bukkit
 import org.bukkit.Material
 import org.bukkit.configuration.Configuration
 import kotlin.properties.Delegates
@@ -28,54 +29,54 @@ const val DEFAULT_STRUCTURE_BLOCK_DURABILITY = 10.0f
 
 
 class ConfigParser(private val config: Configuration) {
-    var globalBaseTemperature: Float by Delegates.notNull()
+    var globalBaseTemperature: Float = DEFAULT_GLOBAL_BASE_TEMPERATURE
         private set
 
-    var playerToleranceBuffer : Float by Delegates.notNull()
+    var playerToleranceBuffer: Float = DEFAULT_PLAYER_TOLERANCE_BUFFER
         private set
 
-    var playerCriticalLowTemp : Float by Delegates.notNull()
+    var playerCriticalLowTemp: Float = DEFAULT_PLAYER_CRITICAL_LOW_TEMP
         private set
 
-    var playerMildEffectsThreshold : Float by Delegates.notNull()
+    var playerMildEffectsThreshold: Float = DEFAULT_PLAYER_MILD_EFFECTS_THRESHOLD
         private set
 
-    var playerModerateEffectsThreshold : Float by Delegates.notNull()
+    var playerModerateEffectsThreshold: Float = DEFAULT_PLAYER_MODERATE_EFFECTS_THRESHOLD
         private set
 
-    var playerGradualTemperatureChangeRate : Float by Delegates.notNull()
+    var playerGradualTemperatureChangeRate: Float = DEFAULT_PLAYER_GRADUAL_TEMPERATURE_CHANGE_RATE
         private set
 
-    var playerTemperatureDamage : Float by Delegates.notNull()
+    var playerTemperatureDamage: Float = DEFAULT_PLAYER_TEMPERATURE_DAMAGE
         private set
 
-    var playerBodyTemperature : Float by Delegates.notNull()
+    var playerBodyTemperature: Float = DEFAULT_PLAYER_BODY_TEMPERATURE
         private set
 
-    lateinit var generatorHeatBlocks : Set<Material> // Increases Heat, increase fuel consumption
+    var generatorHeatBlocks: Set<Material> = DEFAULT_GENERATOR_HEAT_BLOCKS
         private set
-    lateinit var generatorControlBlocks : Set<Material> // Decreases stress
+    var generatorControlBlocks: Set<Material> = DEFAULT_GENERATOR_CONTROL_BLOCKS
         private set
-    lateinit var generatorStructureBlocks : Set<Material> // Increases durability
+    var generatorStructureBlocks: Set<Material> = DEFAULT_GENERATOR_STRUCTURE_BLOCKS
         private set
-    lateinit var generatorDissipationBlocks : Set<Material> // Increases range, increases stress
+    var generatorDissipationBlocks: Set<Material> = DEFAULT_GENERATOR_DISSIPATION_BLOCKS
         private set
-    lateinit var generatorExhaustBlocks : Set<Material> // Decrease stress, increases heat/ Constants
+    var generatorExhaustBlocks: Set<Material> = DEFAULT_GENERATOR_EXHAUST_BLOCKS
         private set
 
-    var generatorHeatBlockHeat : Float by Delegates.notNull()
+    var generatorHeatBlockHeat: Float = DEFAULT_HEAT_BLOCK_HEAT
         private set
-    var generatorExhaustHeat : Float by Delegates.notNull()
+    var generatorExhaustHeat: Float = DEFAULT_EXHAUST_HEAT
         private set
-    var generatorDissipationBlockRange : Float by Delegates.notNull()
+    var generatorDissipationBlockRange: Float = DEFAULT_DISSIPATION_BLOCK_RANGE
         private set
-    var generatorDissipationBlockStress : Float by Delegates.notNull()
+    var generatorDissipationBlockStress: Float = DEFAULT_DISSIPATION_BLOCK_STRESS
         private set
-    var generatorControlBlocksStressDecrease : Float by Delegates.notNull()
+    var generatorControlBlocksStressDecrease: Float = DEFAULT_CONTROL_BLOCKS_STRESS_DECREASE
         private set
-    var generatorBaseHeatRange : Float by Delegates.notNull()
+    var generatorBaseHeatRange: Float = DEFAULT_BASE_HEAT_RANGE
         private set
-    var generatorStructureBlockDurability : Float by Delegates.notNull()
+    var generatorStructureBlockDurability: Float = DEFAULT_STRUCTURE_BLOCK_DURABILITY
         private set
 
 
