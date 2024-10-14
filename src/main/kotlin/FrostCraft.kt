@@ -1,3 +1,4 @@
+import frostplayer.PlayerManager
 import generators.Generator
 import generators.InvalidStructureException
 import net.axay.kspigot.chat.KColors

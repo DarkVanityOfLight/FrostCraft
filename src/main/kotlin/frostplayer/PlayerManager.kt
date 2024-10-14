@@ -1,3 +1,6 @@
+package frostplayer
+
+import Manager
 import net.axay.kspigot.event.listen
 import org.bukkit.Bukkit
 import org.bukkit.GameMode
@@ -13,7 +16,7 @@ import java.util.*
  * Registers and deregisters players, and handles player-related events.
  */
 class PlayerManager {
-    // A map to store FrostPlayer instances by their UUIDs
+    // A map to store frostplayer.FrostPlayer instances by their UUIDs
     private val players = mutableMapOf<UUID, FrostPlayer>()
 
     init {
@@ -72,9 +75,9 @@ class PlayerManager {
     }
 
     /**
-     * Retrieves a FrostPlayer instance by the player's UUID.
+     * Retrieves a frostplayer.FrostPlayer instance by the player's UUID.
      * @param player The UUID of the player.
-     * @return The FrostPlayer instance, or null if the player is not registered.
+     * @return The frostplayer.FrostPlayer instance, or null if the player is not registered.
      */
     fun getPlayer(player: UUID): FrostPlayer? {
         return players[player]
