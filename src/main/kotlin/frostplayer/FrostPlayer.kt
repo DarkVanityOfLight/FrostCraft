@@ -231,4 +231,16 @@ class FrostPlayer(var playerId: java.util.UUID) {
         frozen = false
         player.freezeTicks = 0
     }
+
+    // ====== API USE ======
+
+    fun targetTemperature(player: Player) : Float {
+        val (isEnclosed, insulation) = isEnclosed(player.location.toSimple(), player.world)
+
+        val heatSources = emptySet<Material>()
+        val zoneTemperature = Manager.climateManager.getTemperature(player.location)
+        val insulationMaterials = if (isEnclosed) insulation else emptyList()
+
+        return calculateInsulation(insulationMaterials) * (calculateHeatSources(heatSources) + zoneTemperature)
+    }
 }
