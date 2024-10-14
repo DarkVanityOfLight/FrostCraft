@@ -33,7 +33,7 @@ class FrostPlayer(var playerId: java.util.UUID) {
     var temperature: Float = Manager.configParser.playerBodyTemperature
         private set
 
-    var state: BodyTemperatureState = BodyTemperatureState.NORMAL
+    var bodyTemperatureState: BodyTemperatureState = BodyTemperatureState.NORMAL
         private set
 
     var diedFromFrost = false
@@ -97,7 +97,7 @@ class FrostPlayer(var playerId: java.util.UUID) {
      * Updates the player's temperature state based on the current temperature.
      */
     private fun updateTemperatureState() {
-        state = when {
+        bodyTemperatureState = when {
             temperature < Manager.configParser.playerCriticalLowTemp -> BodyTemperatureState.SEVERE
             temperature < Manager.configParser.playerModerateEffectsThreshold -> BodyTemperatureState.MODERATE
             temperature < Manager.configParser.playerMildEffectsThreshold -> BodyTemperatureState.MILD
@@ -109,7 +109,7 @@ class FrostPlayer(var playerId: java.util.UUID) {
      * Applies the correct effects based on the player's current temperature state.
      */
     private fun applyTemperatureEffects(player: Player) {
-        when (state) {
+        when (bodyTemperatureState) {
             BodyTemperatureState.SEVERE -> handleSevereCold(player)
             BodyTemperatureState.MODERATE -> handleModerateCold(player)
             BodyTemperatureState.MILD -> handleMildCold(player)
@@ -188,7 +188,7 @@ class FrostPlayer(var playerId: java.util.UUID) {
      * Applies the appropriate cold-related potion effects to the player based on their state.
      */
     private fun applyColdEffects(player: Player) {
-        when (state) {
+        when (bodyTemperatureState) {
             BodyTemperatureState.MILD -> {
                 player.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 100, 0))
                 player.addPotionEffect(PotionEffect(PotionEffectType.HUNGER, 100, 0))
