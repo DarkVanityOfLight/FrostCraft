@@ -144,7 +144,7 @@ class FrostPlayer(var playerId: java.util.UUID) {
      * Warms the player up and removes cold effects if they're in a normal temperature range.
      */
     private fun warmUp(player: Player) {
-        if (frozen) unfreezePlayer(player)
+        if (frozen) unfreeze(player)
         removeColdEffects(player)
         coldMessageInterval = 0
     }
@@ -227,7 +227,7 @@ class FrostPlayer(var playerId: java.util.UUID) {
     /**
      * Unfreezes the player.
      */
-    fun unfreezePlayer(player: Player) {
+    fun unfreeze(player: Player) {
         frozen = false
         player.freezeTicks = 0
     }
