@@ -7,12 +7,15 @@ import net.axay.kspigot.gui.GUIType
 import net.axay.kspigot.gui.Slots
 import net.axay.kspigot.gui.kSpigotGUI
 import net.axay.kspigot.gui.openGUI
+import net.axay.kspigot.particles.particle
 import net.kyori.adventure.text.Component
 import org.bukkit.Bukkit
 import org.bukkit.Material
+import org.bukkit.Particle
 import org.bukkit.block.Block
 import org.bukkit.block.data.type.Campfire
 import org.bukkit.block.Chest
+import org.bukkit.block.data.type.Dispenser
 import org.bukkit.block.data.type.Furnace
 import org.bukkit.event.block.BlockBreakEvent
 import org.bukkit.event.player.PlayerInteractEvent
@@ -20,10 +23,10 @@ import org.bukkit.inventory.ItemStack
 import zones.HeatZone
 import kotlin.math.max
 import kotlin.math.pow
+import kotlin.random.Random
 
 // TODO Melt snow in a radius around the generator, maybe do this in zones tho
 // TODO Increase stress slowly over time and break generator if stress is too high
-// TODO Add particle effects
 // TODO Add overdrive
 
 const val BASE_HEAT_RANGE = 10.0f
@@ -227,6 +230,7 @@ class Generator(private val origin: Block) {
         calculateDurability()
         updateZone()
         consumeFuel()
+        showParticles()
     }
 
     private fun calculateHeat() {
@@ -315,6 +319,27 @@ class Generator(private val origin: Block) {
         runTaskId = Bukkit.getScheduler().scheduleSyncRepeatingTask(Manager, this::run, 5, UPDATE_TICK_RATE.toLong())
         return runTaskId != -1
 
+    }
+
+    private fun showParticles() {
+        dissipationBlocks.forEach { block ->
+            if (block.type != Material.DISPENSER) return@forEach
+
+            val direction = (block.state.blockData as Dispenser).facing.direction.normalize()
+
+            when (Random.nextInt(1, 3) ) {
+                1 -> particle(Particle.LARGE_SMOKE) {
+                        amount = 1
+                        extra = 0.1
+                    }.spawnAt(block.location.add(direction))
+                2 -> particle(Particle.FLAME) {
+                        amount = 1
+                        extra = 0.1
+                    }.spawnAt(block.location.add(direction))
+            }
+
+
+        }
     }
 
     fun powerOff() : Boolean {
