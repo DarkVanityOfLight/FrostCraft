@@ -59,7 +59,9 @@ class PlayerManager {
      * @param player The player to register.
      */
     fun registerPlayer(player: Player) {
-        players[player.uniqueId] = FrostPlayer(player.uniqueId)
+        val fp = FrostPlayer(player.uniqueId)
+        players[player.uniqueId] = fp
+        player.showBossBar(fp.bar)
     }
 
     /**

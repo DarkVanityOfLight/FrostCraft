@@ -7,14 +7,10 @@ import isEnclosed
 import net.axay.kspigot.chat.KColors
 import net.axay.kspigot.chat.literalText
 import net.axay.kspigot.extensions.geometry.toSimple
+import net.kyori.adventure.bossbar.BossBar
 import org.bukkit.Bukkit
 import org.bukkit.Material
-import org.bukkit.damage.DamageSource
-import org.bukkit.damage.DamageType
 import org.bukkit.entity.Player
-import org.bukkit.event.entity.EntityDamageEvent
-import org.bukkit.potion.PotionEffect
-import org.bukkit.potion.PotionEffectType
 
 enum class BodyTemperatureState {
     WARM,
@@ -39,6 +35,9 @@ class FrostPlayer(var playerId: java.util.UUID) {
 
     private var coldMessageInterval = 0
     private var coldTicks = 0
+    var bar : BossBar = BossBar.bossBar(literalText(""), 1.0f, BossBar.Color.WHITE, BossBar.Overlay.PROGRESS)
+        private set
+
 
     /**
      * Main function that checks the player's temperature and applies effects.
@@ -56,6 +55,10 @@ class FrostPlayer(var playerId: java.util.UUID) {
         val insulationMaterials = if (isEnclosed) insulation else emptyList()
 
         updateTemperature(heatSources, insulationMaterials, zoneTemperature)
+
+       Bukkit.getScheduler().callSyncMethod(Manager) {
+           showTemperatureState(player)
+       }
 
         if (player.gameMode == org.bukkit.GameMode.CREATIVE || player.gameMode == org.bukkit.GameMode.SPECTATOR) return
 
@@ -127,19 +130,25 @@ class FrostPlayer(var playerId: java.util.UUID) {
 
     }
 
-    /**
-     * Shows a cold-related message on the player's action bar.
-     */
-    private fun showColdMessage(player: Player) {
-        if (coldMessageInterval == 0) {
-            player.sendActionBar(literalText("You are freezing!") {
-                italic = true
-                color = KColors.LIGHTBLUE
-            })
+    private fun showTemperatureState(player: Player) {
+        val text = when (bodyTemperatureState){
+            BodyTemperatureState.SEVERE -> "Freezing"
+            BodyTemperatureState.MODERATE -> "Very cold"
+            BodyTemperatureState.MILD -> "Cold"
+            BodyTemperatureState.NORMAL -> "Comfortable"
+            BodyTemperatureState.WARM -> "Warm"
         }
 
-        coldMessageInterval++
-        if (coldMessageInterval >= 20) coldMessageInterval = 0
+        val color = when (bodyTemperatureState){
+            BodyTemperatureState.SEVERE -> BossBar.Color.BLUE
+            BodyTemperatureState.MODERATE -> BossBar.Color.BLUE
+            BodyTemperatureState.MILD -> BossBar.Color.BLUE
+            BodyTemperatureState.NORMAL -> BossBar.Color.YELLOW
+            BodyTemperatureState.WARM -> BossBar.Color.RED
+        }
+
+        bar.name(literalText("$text - $temperature°K"))
+        bar.color(color)
     }
 
     /**
