@@ -17,6 +17,7 @@ import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
 
 enum class BodyTemperatureState {
+    WARM,
     NORMAL,
     MILD,
     MODERATE,
@@ -36,10 +37,8 @@ class FrostPlayer(var playerId: java.util.UUID) {
     var bodyTemperatureState: BodyTemperatureState = BodyTemperatureState.NORMAL
         private set
 
-    var diedFromFrost = false
-
     private var coldMessageInterval = 0
-    private var frozen = false
+    private var coldTicks = 0
 
     /**
      * Main function that checks the player's temperature and applies effects.
@@ -109,64 +108,22 @@ class FrostPlayer(var playerId: java.util.UUID) {
      * Applies the correct effects based on the player's current temperature state.
      */
     private fun applyTemperatureEffects(player: Player) {
+        player.lockFreezeTicks(false)
+
         when (bodyTemperatureState) {
-            BodyTemperatureState.SEVERE -> handleSevereCold(player)
-            BodyTemperatureState.MODERATE -> handleModerateCold(player)
-            BodyTemperatureState.MILD -> handleMildCold(player)
-            BodyTemperatureState.NORMAL -> warmUp(player)
+            BodyTemperatureState.SEVERE -> coldTicks += 3
+            BodyTemperatureState.MODERATE -> coldTicks += 2
+            BodyTemperatureState.MILD -> coldTicks += 1
+            BodyTemperatureState.NORMAL -> coldTicks -= 2
+            BodyTemperatureState.WARM -> coldTicks -= 3
         }
-    }
 
-    /**
-     * Handles the effects of severe cold (constant damage and freezing).
-     */
-    private fun handleSevereCold(player: Player) {
-        applyColdDamage(player, Manager.configParser.playerTemperatureDamage * 2)
-        freezePlayer(player)
-    }
+        coldTicks = coldTicks.coerceAtLeast(0).coerceAtMost(player.maxFreezeTicks)
 
-    /**
-     * Handles the effects of moderate cold (slowness, weakness, and minor damage).
-     */
-    private fun handleModerateCold(player: Player) {
-        applyColdEffects(player)
-        applyColdDamage(player, Manager.configParser.playerTemperatureDamage)
-    }
+        player.freezeTicks = coldTicks
 
-    /**
-     * Handles the effects of mild cold (slowness, hunger).
-     */
-    private fun handleMildCold(player: Player) {
-        applyColdEffects(player)
-    }
+        player.lockFreezeTicks(true)
 
-    /**
-     * Warms the player up and removes cold effects if they're in a normal temperature range.
-     */
-    private fun warmUp(player: Player) {
-        if (frozen) unfreeze(player)
-        removeColdEffects(player)
-        coldMessageInterval = 0
-    }
-
-    /**
-     * Applies damage to the player due to cold exposure.
-     */
-    private fun applyColdDamage(player: Player, damage: Float) {
-        showColdMessage(player)
-
-        val source = DamageSource.builder(DamageType.FREEZE).build()
-        val event = EntityDamageEvent(player, EntityDamageEvent.DamageCause.FREEZE, source, damage.toDouble())
-        Bukkit.getPluginManager().callEvent(event)
-
-        if (!event.isCancelled) {
-            if (player.health - damage <= 0) {
-                player.health = 0.0
-                diedFromFrost = true
-            } else {
-                player.health -= damage
-            }
-        }
     }
 
     /**
@@ -185,55 +142,19 @@ class FrostPlayer(var playerId: java.util.UUID) {
     }
 
     /**
-     * Applies the appropriate cold-related potion effects to the player based on their state.
-     */
-    private fun applyColdEffects(player: Player) {
-        when (bodyTemperatureState) {
-            BodyTemperatureState.MILD -> {
-                player.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 100, 0))
-                player.addPotionEffect(PotionEffect(PotionEffectType.HUNGER, 100, 0))
-            }
-            BodyTemperatureState.MODERATE -> {
-                player.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 100, 1))
-                player.addPotionEffect(PotionEffect(PotionEffectType.WEAKNESS, 100, 1))
-            }
-            BodyTemperatureState.SEVERE -> {
-                player.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 100, 2))
-                player.addPotionEffect(PotionEffect(PotionEffectType.WEAKNESS, 100, 2))
-            }
-            else -> {
-                // No cold effects in NORMAL state
-            }
-        }
-    }
-
-    /**
-     * Removes all cold-related potion effects.
-     */
-    fun removeColdEffects(player: Player) {
-        player.removePotionEffect(PotionEffectType.SLOWNESS)
-        player.removePotionEffect(PotionEffectType.WEAKNESS)
-        player.removePotionEffect(PotionEffectType.HUNGER)
-    }
-
-    /**
-     * Freezes the player.
-     */
-    private fun freezePlayer(player: Player) {
-        frozen = true
-        player.freezeTicks = Int.MAX_VALUE
-    }
-
-    /**
      * Unfreezes the player.
      */
     fun unfreeze(player: Player) {
-        frozen = false
         player.freezeTicks = 0
+        this.coldTicks = 0
     }
 
     // ====== API USE ======
 
+    /**
+     * Returns the target temperature for the player based on their location and insulation.
+     * Is best called async for less lag
+     */
     fun targetTemperature(player: Player) : Float {
         val (isEnclosed, insulation) = isEnclosed(player.location.toSimple(), player.world)
 

@@ -1,6 +1,7 @@
 package frostplayer
 
 import Manager
+import net.axay.kspigot.chat.literalText
 import net.axay.kspigot.event.listen
 import org.bukkit.Bukkit
 import org.bukkit.GameMode
@@ -33,23 +34,18 @@ class PlayerManager {
         // Listen for player death events to customize the death message if the player died from frost
         listen<PlayerDeathEvent> {
             if (it.entity.uniqueId in players) {
-                if (players[it.entity.uniqueId]!!.diedFromFrost) {
-                    it.deathMessage = "${it.entity.name} died from the cold"
-                    players[it.entity.uniqueId]!!.diedFromFrost = false
-                }
+                players[it.entity.uniqueId]?.unfreeze(it.entity)
             }
         }
 
         listen<PlayerGameModeChangeEvent> {
             if (it.newGameMode == GameMode.SPECTATOR || it.newGameMode == GameMode.CREATIVE) {
                 players[it.player.uniqueId]?.unfreeze(it.player)
-                players[it.player.uniqueId]?.removeColdEffects(it.player)
             }
         }
 
         // Schedule a repeating task to check the temperature of every player every second
-        // This is a simple way to do it, but it's not efficient, it's better to use a more efficient way to do it
-        Bukkit.getScheduler().scheduleSyncRepeatingTask(Manager, Runnable {
+        Bukkit.getScheduler().scheduleSyncRepeatingTask(Manager, {
             players.values.forEach {
                 Bukkit.getScheduler().runTaskAsynchronously(Manager, Runnable {
                     it.checkTemperature(Bukkit.getPlayer(it.playerId)!!)
