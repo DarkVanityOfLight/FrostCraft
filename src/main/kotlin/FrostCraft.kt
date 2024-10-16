@@ -1,3 +1,5 @@
+import disease.cold.Cold
+import disease.DiseaseManager
 import frostplayer.PlayerManager
 import generators.Generator
 import generators.InvalidStructureException
@@ -22,6 +24,7 @@ class FrostCraft : KSpigot() {
     lateinit var configParser: ConfigParser
     lateinit var playerManager: PlayerManager
     lateinit var climateManager: ClimateManager
+    lateinit var diseaseManager: DiseaseManager
 
     override fun load() {
         INSTANCE = this
@@ -36,6 +39,13 @@ class FrostCraft : KSpigot() {
 
         playerManager = PlayerManager()
         climateManager = ClimateManager()
+        diseaseManager = DiseaseManager()
+
+        command("cold"){
+            runs {
+                diseaseManager.addDisease(player, Cold())
+            }
+        }
 
         command("bodyTemperature") {
             runs {

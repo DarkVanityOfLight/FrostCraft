@@ -4,7 +4,6 @@ import Manager
 import calculateHeatSources
 import calculateInsulation
 import isEnclosed
-import net.axay.kspigot.chat.KColors
 import net.axay.kspigot.chat.literalText
 import net.axay.kspigot.extensions.geometry.toSimple
 import net.kyori.adventure.bossbar.BossBar
@@ -33,7 +32,6 @@ class FrostPlayer(var playerId: java.util.UUID) {
     var bodyTemperatureState: BodyTemperatureState = BodyTemperatureState.NORMAL
         private set
 
-    private var coldMessageInterval = 0
     private var coldTicks = 0
     var bar : BossBar = BossBar.bossBar(literalText(""), 1.0f, BossBar.Color.WHITE, BossBar.Overlay.PROGRESS)
         private set
@@ -57,7 +55,7 @@ class FrostPlayer(var playerId: java.util.UUID) {
         updateTemperature(heatSources, insulationMaterials, zoneTemperature)
 
        Bukkit.getScheduler().callSyncMethod(Manager) {
-           showTemperatureState(player)
+           showTemperatureState()
        }
 
         if (player.gameMode == org.bukkit.GameMode.CREATIVE || player.gameMode == org.bukkit.GameMode.SPECTATOR) return
@@ -130,7 +128,7 @@ class FrostPlayer(var playerId: java.util.UUID) {
 
     }
 
-    private fun showTemperatureState(player: Player) {
+    private fun showTemperatureState() {
         val text = when (bodyTemperatureState){
             BodyTemperatureState.SEVERE -> "Freezing"
             BodyTemperatureState.MODERATE -> "Very cold"
