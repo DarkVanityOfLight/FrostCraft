@@ -100,6 +100,7 @@ class FrostPlayer(var playerId: java.util.UUID) {
             temperature < Manager.configParser.playerCriticalLowTemp -> BodyTemperatureState.SEVERE
             temperature < Manager.configParser.playerModerateEffectsThreshold -> BodyTemperatureState.MODERATE
             temperature < Manager.configParser.playerMildEffectsThreshold -> BodyTemperatureState.MILD
+            temperature > Manager.configParser.playerWarmEffectsThreshold -> BodyTemperatureState.WARM
             else -> BodyTemperatureState.NORMAL
         }
     }

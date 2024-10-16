@@ -5,20 +5,28 @@ import kotlin.properties.Delegates
 
 
 // Defaults
-const val DEFAULT_GLOBAL_BASE_TEMPERATURE = 273.15f
+const val DEFAULT_GLOBAL_BASE_TEMPERATURE = 260.15f
 
-const val DEFAULT_PLAYER_TOLERANCE_BUFFER = 2.0f
-const val DEFAULT_PLAYER_CRITICAL_LOW_TEMP = 263.15f
+
+
+const val DEFAULT_PLAYER_WARM_EFFECTS_THRESHOLD = 350.15f
 const val DEFAULT_PLAYER_MILD_EFFECTS_THRESHOLD = 273.15f
 const val DEFAULT_PLAYER_MODERATE_EFFECTS_THRESHOLD = 268.15f
+const val DEFAULT_PLAYER_CRITICAL_LOW_TEMP = 263.15f
+
+const val DEFAULT_PLAYER_TOLERANCE_BUFFER = 2.0f
 const val DEFAULT_PLAYER_GRADUAL_TEMPERATURE_CHANGE_RATE = 1f
-const val DEFAULT_PLAYER_TEMPERATURE_DAMAGE = 0.1f
+
+const val DEFAULT_PLAYER_TEMPERATURE_DAMAGE = 0.1f // TODO To remvoe
+
 const val DEFAULT_PLAYER_BODY_TEMPERATURE = 310.15f
+
 val DEFAULT_GENERATOR_HEAT_BLOCKS = setOf(Material.FURNACE, Material.BLAST_FURNACE, Material.SMOKER)
 val DEFAULT_GENERATOR_CONTROL_BLOCKS = setOf(Material.REDSTONE_BLOCK)
 val DEFAULT_GENERATOR_STRUCTURE_BLOCKS = setOf(Material.IRON_BLOCK, Material.GOLD_BLOCK, Material.DIAMOND_BLOCK, Material.NETHERITE_BLOCK)
 val DEFAULT_GENERATOR_DISSIPATION_BLOCKS = setOf(Material.DISPENSER, Material.DROPPER)
 val DEFAULT_GENERATOR_EXHAUST_BLOCKS = setOf(Material.CAMPFIRE)
+
 const val DEFAULT_HEAT_BLOCK_HEAT = 50.0f
 const val DEFAULT_EXHAUST_HEAT = 25.0f
 const val DEFAULT_DISSIPATION_BLOCK_RANGE = 5.0f
@@ -51,6 +59,9 @@ class ConfigParser(private val config: Configuration) {
         private set
 
     var playerBodyTemperature: Float = DEFAULT_PLAYER_BODY_TEMPERATURE
+        private set
+
+    var playerWarmEffectsThreshold : Float = DEFAULT_PLAYER_WARM_EFFECTS_THRESHOLD
         private set
 
     var generatorHeatBlocks: Set<Material> = DEFAULT_GENERATOR_HEAT_BLOCKS
@@ -92,6 +103,7 @@ class ConfigParser(private val config: Configuration) {
             configurationSection.get("gradualTemperatureChangeRate", DEFAULT_PLAYER_GRADUAL_TEMPERATURE_CHANGE_RATE).also { playerGradualTemperatureChangeRate = (it!! as Float) }
             configurationSection.get("temperatureDamage", DEFAULT_PLAYER_TEMPERATURE_DAMAGE).also { playerTemperatureDamage = (it!! as Float) }
             configurationSection.get("bodyTemperature", DEFAULT_PLAYER_BODY_TEMPERATURE).also { playerBodyTemperature = (it!! as Float) }
+            configurationSection.get("warmEffectsThreshold", DEFAULT_PLAYER_WARM_EFFECTS_THRESHOLD).also { playerWarmEffectsThreshold = (it!! as Float) }
         }
 
         config.getConfigurationSection("generator")?.let {configurationSection ->
